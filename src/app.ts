@@ -7,19 +7,6 @@ import {dataSource} from './db/db.config'
 
 const app = express();
 const port = 2000;
-
-// const dataSource = new DataSource({
-//     type: 'postgres',
-//     host: 'localhost',
-//     port: 3000,
-//     username: 'postgres',
-//     password: '03244373938',
-//     database: 'test',
-//     entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-//     synchronize: true,
-//     logging: true
-// });
-
 dataSource.initialize().then(() => {
    console.log("Database connected!")
 }).catch((error) => {
