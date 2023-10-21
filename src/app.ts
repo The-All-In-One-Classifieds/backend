@@ -1,20 +1,36 @@
-import "reflect-metadata";
-import express from 'express';
-import {testRouter} from "./routers";
-import {dataSource} from './db/db.config'
-// import {DataSource} from "typeorm";
-// import {join} from "path";
+import 'express-async-errors';
+
+import swaggerUi from 'swagger-ui-express'
+import express, { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import cors from 'cors';
+
+import { routes } from './routes';
+import { AppException } from './common/AppException';
+import { UPLOADS_FOLDER } from './configs/uploadConfig';
 
 const app = express();
-const port = 2000;
-dataSource.initialize().then(() => {
-   console.log("Database connected!")
-}).catch((error) => {
-    console.log("Error connecting database!", error);
-});
-//sssssssssssssssssssssssss
-app.use('/', testRouter);
 
-app.listen(port, () => {
-    console.log(`Hello, App is running at http://localhost:${port}`);
+app.use(express.json());
+app.use(cors());
+
+app.use("/images", express.static(UPLOADS_FOLDER));
+
+app.use(routes)
+app.use((err: { statusCode: number; message: any; }, request: Request, response: Response, next: NextFunction) => {
+    if (err instanceof AppException) {
+        return response.status(err.statusCode).json({
+            status: "error",
+            message: err.message,
+        });
+    }
+
+    console.log(err);
+
+    return response.status(500).json({
+        status: "error",
+        message: "Internal server error",
+    });
 });
+
+const PORT = 2339;
+app.listen(PORT, () => console.log(`Server is running on Port ${PORT}`));

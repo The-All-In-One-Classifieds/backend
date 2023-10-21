@@ -1,0 +1,11 @@
+Run existing migrations:
+npx prisma migrate dev
+
+Create and run new migrations
+npx prisma migrate dev --name init
+
+Run script.ts
+npx ts-node ./prisma/script.ts
+
+Overview
+npx prisma studio

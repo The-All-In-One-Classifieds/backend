@@ -1,0 +1,69 @@
+// This is the Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id              Int            @id @default(autoincrement())
+  first_name      String
+  last_name       String
+  email           String         @unique
+  phone           String         @unique
+  password        String
+  profile_picture String?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @default(now())
+  user_token      RefreshTokens?
+  ads             Ads[]          @relation("user_ads")
+}
+
+model RefreshTokens {
+  id         Int      @id @default(autoincrement())
+  expires_in Int
+  user_id    Int      @unique
+  user       Users    @relation(fields: [user_id], references: [id])
+  created_at DateTime @default(now())
+}
+
+model Ads {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String
+  is_new      Boolean
+  price       Int
+  user_id     Int
+  user        Users      @relation(fields: [user_id], references: [id], name: "user_ads")
+  category_id Int
+  category    Category   @relation(fields: [category_id], references: [id])
+  is_active   Boolean    @default(true)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @default(now())
+  expires_on  DateTime   @default(now())
+  ad_images   AdImages[]
+}
+
+model AdImages {
+  id         Int      @id @default(autoincrement())
+  path       String
+  name       String
+  ad_id      Int
+  ad         Ads      @relation(fields: [ad_id], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+model Category {
+  id                 Int        @id @default(autoincrement())
+  name               String     @unique
+  parent_category_id Int?
+  parent_category    Category?  @relation("Child_categories", fields: [parent_category_id], references: [id])
+  child_categories   Category[] @relation("Child_categories")
+  Ads                Ads[]
+}
