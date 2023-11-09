@@ -8,7 +8,7 @@ export class UserAdsController {
 
     const ads = await prisma.ads.findMany({
       where: {
-        id: userId
+        user_id: userId
       },
       include: {
         ad_images: {
