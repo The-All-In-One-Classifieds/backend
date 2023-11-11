@@ -40,7 +40,7 @@ export class AdsController {
 
     async index(request: Request, response: Response) {
         const userId = parseInt(request.user.id);
-
+        console.log("User id: ", userId)
         const is_new = request.query.is_new === undefined ? undefined : request.query.is_new === 'true'
         const query = typeof request.query.query === 'string' ? request.query.query : undefined
         const categories = request.query.categories === undefined ? undefined : typeof request.query.categories === 'string' && JSON.parse(request.query.categories)
@@ -50,6 +50,7 @@ export class AdsController {
                 user_id: {
                     not: userId
                 },
+                is_active: true,
                 is_new,
                 title: {
                     contains: query
@@ -80,6 +81,7 @@ export class AdsController {
             }
         })
 
+        console.log("Length ", ads.length)
         return response.json(ads);
     }
 
@@ -93,23 +95,29 @@ export class AdsController {
         } = request.body
         const userId = parseInt(request.user.id);
 
+        console.log("Creating new add");
         if (!title) {
+            console.log("title Empty");
             throw new AppException("Ad title cannot be empty.")
         }
 
         if (!description) {
+            console.log("description Empty");
             throw new AppException("Ad description cannot be empty.")
         }
 
         if (typeof is_new === 'string' ? !is_new : typeof is_new === undefined) {
+            console.log("is_new Empty");
             throw new AppException("The condition of the Item is Mandatory (New or Used).")
         }
 
         if (!price) {
+            console.log("Price Empty");
             throw new AppException("Ad Price cannot be empty.")
         }
 
         if (!category) {
+            console.log("Category Empty");
             throw new AppException("Ad must belong to a category.")
         }
 
@@ -123,6 +131,7 @@ export class AdsController {
         })
 
         if (!selectedCategory) {
+            console.log("Selected category is empty");
             throw new AppException("Selected category is invalid.")
         }
 
@@ -136,6 +145,8 @@ export class AdsController {
                 user_id: userId
             }
         })
+
+        console.log("Ad created: ", title, description, userId)
         return response.status(201).json(ad);
     }
 
