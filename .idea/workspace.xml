@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="056934b8-50ad-4ecf-bbdd-8bfdbe805ed0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.ts" afterDir="false" />
+    <list default="true" id="056934b8-50ad-4ecf-bbdd-8bfdbe805ed0" name="Changes" comment="Adding swagger for api documentation">
+      <change beforePath="$PROJECT_DIR$/src/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/controllers/AdsController.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/AdsController.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -90,11 +87,35 @@
       <workItem from="1698519256669" duration="2004000" />
       <workItem from="1699350650811" duration="147000" />
       <workItem from="1699383170811" duration="277000" />
-      <workItem from="1699518187467" duration="4115000" />
+      <workItem from="1699518187467" duration="4327000" />
     </task>
+    <task id="LOCAL-00001" summary="Adding swagger for api documentation">
+      <option name="closed" value="true" />
+      <created>1699697852781</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1699697852781</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Adding swagger for api documentation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Adding swagger for api documentation" />
   </component>
 </project>
