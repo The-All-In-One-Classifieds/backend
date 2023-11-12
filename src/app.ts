@@ -1,6 +1,7 @@
-import swaggerUi from "swagger-ui-express";
-import swaggerOutput from "./docs/swagger.json";
-import express, { NextFunction, Request, Response } from 'express';
+import 'express-async-errors';
+
+import swaggerUi from 'swagger-ui-express'
+import express, { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 
 import { routes } from './routes';
@@ -12,10 +13,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 app.use("/images", express.static(UPLOADS_FOLDER));
-app.use(routes)
 
+app.use(routes)
 app.use((err: { statusCode: number; message: any; }, request: Request, response: Response, next: NextFunction) => {
     if (err instanceof AppException) {
         return response.status(err.statusCode).json({

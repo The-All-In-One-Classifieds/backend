@@ -40,17 +40,16 @@ export class AdsController {
 
     async index(request: Request, response: Response) {
         const userId = parseInt(request.user.id);
-        console.log("User id: ", userId)
+
         const is_new = request.query.is_new === undefined ? undefined : request.query.is_new === 'true'
         const query = typeof request.query.query === 'string' ? request.query.query : undefined
-        // const categories = request.query.categories === undefined ? undefined : typeof request.query.categories === 'string' && JSON.parse(request.query.categories)
-
+        const categories = request.query.categories === undefined ? undefined : typeof request.query.categories === 'string' && JSON.parse(request.query.categories)
+        console.log(request)
         const ads = await prisma.ads.findMany({
             where: {
                 user_id: {
                     not: userId
                 },
-                is_active: true,
                 is_new,
                 title: {
                     contains: query
@@ -137,7 +136,6 @@ export class AdsController {
                 user_id: userId
             }
         })
-
         return response.status(201).json(ad);
     }
 
