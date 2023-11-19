@@ -1,6 +1,3 @@
-// This is the Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,59 +8,133 @@ datasource db {
 }
 
 model Users {
-  id              Int            @id @default(autoincrement())
-  first_name      String
-  last_name       String
-  email           String         @unique
-  phone           String         @unique
-  password        String
-  profile_picture String?
-  created_at      DateTime       @default(now())
-  updated_at      DateTime       @default(now())
-  user_token      RefreshTokens?
-  ads             Ads[]          @relation("user_ads")
+  id                Int               @id @default(autoincrement())
+  first_name        String
+  last_name         String
+  email             String            @unique
+  phone             String            @unique
+  password          String
+  profile_picture   String?
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @default(now())
+  address_id        Int?              @unique
+  rating            Float?
+  ads               Ads[]             @relation("user_ads")
+  member_one_chats  Chats[]           @relation("member_one")
+  member_two_chats  Chats[]           @relation("member_two")
+  messages_received Messages[]        @relation("message_receiver")
+  messages_sent     Messages[]        @relation("message_sender")
+  user_token        RefreshTokens?
+  reviews           Reviews[]
+  bids              UserAdsBids[]
+  favorite_ads      UserFavoriteAds[]
+  address           Locations?        @relation(fields: [address_id], references: [id])
 }
 
 model RefreshTokens {
   id         Int      @id @default(autoincrement())
   expires_in Int
   user_id    Int      @unique
-  user       Users    @relation(fields: [user_id], references: [id])
   created_at DateTime @default(now())
+  user       Users    @relation(fields: [user_id], references: [id])
 }
 
 model Ads {
-  id          Int        @id @default(autoincrement())
-  title       String
-  description String
-  is_new      Boolean
-  price       Int
-  user_id     Int
-  user        Users      @relation(fields: [user_id], references: [id], name: "user_ads")
-  category_id Int
-  category    Category   @relation(fields: [category_id], references: [id])
-  is_active   Boolean    @default(true)
-  created_at  DateTime   @default(now())
-  updated_at  DateTime   @default(now())
-  expires_on  DateTime   @default(now())
-  ad_images   AdImages[]
+  id                   Int               @id @default(autoincrement())
+  title                String
+  description          String
+  is_new               Boolean
+  price                Int
+  user_id              Int
+  category_id          Int
+  is_active            Boolean           @default(true)
+  created_at           DateTime          @default(now())
+  updated_at           DateTime          @default(now())
+  expires_on           DateTime          @default(now())
+  is_for_sale          Boolean
+  location_id          Int               @unique
+  show_bids_info       Boolean
+  ad_images            AdImages[]
+  category             Categories        @relation(fields: [category_id], references: [id])
+  location             Locations         @relation(fields: [location_id], references: [id])
+  user                 Users             @relation("user_ads", fields: [user_id], references: [id])
+  bids                 UserAdsBids[]
+  in_user_favorite_ads UserFavoriteAds[]
 }
 
 model AdImages {
   id         Int      @id @default(autoincrement())
   path       String
-  name       String
   ad_id      Int
-  ad         Ads      @relation(fields: [ad_id], references: [id], onDelete: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
+  name       String
+  ad         Ads      @relation(fields: [ad_id], references: [id], onDelete: Cascade)
 }
 
-model Category {
-  id                 Int        @id @default(autoincrement())
-  name               String     @unique
+model Categories {
+  id                 Int          @id @default(autoincrement())
+  name               String       @unique
   parent_category_id Int?
-  parent_category    Category?  @relation("Child_categories", fields: [parent_category_id], references: [id])
-  child_categories   Category[] @relation("Child_categories")
   Ads                Ads[]
+  parent_category    Categories?  @relation("Child_categories", fields: [parent_category_id], references: [id])
+  child_categories   Categories[] @relation("Child_categories")
+}
+
+model Locations {
+  id        Int     @id @default(autoincrement())
+  longitude Decimal
+  latitude  Decimal
+  ad        Ads?
+  user      Users?
+}
+
+model UserFavoriteAds {
+  ad_id   Int
+  user_id Int
+  ad      Ads   @relation(fields: [ad_id], references: [id])
+  user    Users @relation(fields: [user_id], references: [id])
+
+  @@id([ad_id, user_id])
+}
+
+model UserAdsBids {
+  ad_id      Int
+  user_id    Int
+  bid_amount Int
+  is_sent    Boolean
+  status     String
+  ad         Ads     @relation(fields: [ad_id], references: [id])
+  user       Users   @relation(fields: [user_id], references: [id])
+
+  @@id([ad_id, user_id])
+}
+
+model Reviews {
+  id               Int    @id @default(autoincrement())
+  stars            Int
+  comment          String
+  reviewed_user_id Int
+  user_id          Int
+  user             Users  @relation(fields: [user_id], references: [id])
+}
+
+model Chats {
+  member_one_id Int
+  member_two_id Int
+  member_one    Users @relation("member_one", fields: [member_one_id], references: [id])
+  member_two    Users @relation("member_two", fields: [member_two_id], references: [id])
+
+  @@id([member_one_id, member_two_id])
+}
+
+model Messages {
+  id          Int      @id @default(autoincrement())
+  sender_id   Int
+  receiver_id Int
+  content     String
+  created_at  DateTime
+  is_seen     Boolean
+  receiver    Users    @relation("message_receiver", fields: [receiver_id], references: [id])
+  sender      Users    @relation("message_sender", fields: [sender_id], references: [id])
 }

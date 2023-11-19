@@ -3,7 +3,7 @@ import {PrismaClient} from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-    const MobileCategory = await prisma.category.upsert({
+    const MobileCategory = await prisma.categories.upsert({
         where: {
             name: 'Mobile Devices'
         },
@@ -13,7 +13,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Mobile Phones'
         },
@@ -26,7 +26,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Tablets'
         },
@@ -39,7 +39,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Smart Watches'
         },
@@ -52,7 +52,7 @@ async function main() {
         }
     });
 
-    const accessoriesCategory = await prisma.category.upsert({
+    const accessoriesCategory = await prisma.categories.upsert({
         where: {
             name: 'Accessories'
         },
@@ -62,7 +62,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Ear Phones'
         },
@@ -75,7 +75,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Chargers'
         },
@@ -88,7 +88,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Other Accessories'
         },
@@ -101,7 +101,7 @@ async function main() {
         }
     });
 
-    const vehiclesCategory = await prisma.category.upsert({
+    const vehiclesCategory = await prisma.categories.upsert({
         where: {
             name: 'Vehicles'
         },
@@ -111,7 +111,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Cars'
         },
@@ -124,7 +124,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Bikes'
         },
@@ -137,7 +137,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Other Vehicles'
         },
@@ -150,7 +150,7 @@ async function main() {
         }
     });
 
-    const propertiesCategory = await prisma.category.upsert({
+    const propertiesCategory = await prisma.categories.upsert({
         where: {
             name: 'Properties'
         },
@@ -160,7 +160,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Houses'
         },
@@ -173,7 +173,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Land and Plots'
         },
@@ -186,7 +186,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Other Properties'
         },
@@ -199,7 +199,7 @@ async function main() {
         }
     });
 
-    await prisma.category.upsert({
+    await prisma.categories.upsert({
         where: {
             name: 'Other Items'
         },
@@ -211,6 +211,8 @@ async function main() {
 
     prisma.ads.deleteMany();
     prisma.adImages.deleteMany();
+    prisma.refreshTokens.deleteMany();
+    prisma.users.deleteMany();
 }
 
 main()
