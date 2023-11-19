@@ -22,6 +22,7 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 *.lcov
+.expo/
 
 # nyc test coverage
 .nyc_output
@@ -56,6 +57,13 @@ web_modules/
 
 # Optional stylelint cache
 .stylelintcache
+
+# prisma
+prisma/migrations
+prisma/migrations/migration_lock.toml
+
+# storagr
+storage/
 
 # Microbundle cache
 .rpt2_cache/
