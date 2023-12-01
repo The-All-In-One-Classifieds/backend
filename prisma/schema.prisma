@@ -17,7 +17,7 @@ model Users {
   profile_picture   String?
   created_at        DateTime          @default(now())
   updated_at        DateTime          @default(now())
-  address_id        Int?              @unique
+  address_id        Int?
   rating            Float?
   ads               Ads[]             @relation("user_ads")
   member_one_chats  Chats[]           @relation("member_one")
@@ -82,11 +82,14 @@ model Categories {
 }
 
 model Locations {
-  id        Int     @id @default(autoincrement())
-  longitude Decimal
-  latitude  Decimal
-  ad        Ads?
-  user      Users?
+  id           Int     @id @default(autoincrement())
+  longitude    Decimal
+  latitude     Decimal
+  ad           Ads?
+  address_text String
+  user         Users[]
+
+  @@unique([longitude, latitude])
 }
 
 model UserFavoriteAds {

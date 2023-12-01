@@ -21,10 +21,17 @@ export class UserAdsController {
           select: {
             name: true
           }
+        },
+        location: {
+          select: {
+            longitude: true,
+            latitude: true
+          }
         }
       }
     })
 
+    console.log(ads)
     return response.json(ads);
   }
 }

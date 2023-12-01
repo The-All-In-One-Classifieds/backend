@@ -4,6 +4,7 @@ import {prisma} from "../db";
 import {DiskManager} from "../services/DiskManager";
 
 import {AppException} from "../common/AppException";
+import {loadavg} from "os";
 
 export class AdsController {
     async show(request: Request, response: Response) {
@@ -27,6 +28,18 @@ export class AdsController {
                         last_name: true,
                         phone: true
                     }
+                },
+                location: {
+                    select: {
+                        longitude: true,
+                        latitude: true
+                    }
+                },
+                category: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
                 }
             }
         })
@@ -44,7 +57,7 @@ export class AdsController {
         const is_new = request.query.is_new === undefined ? undefined : request.query.is_new === 'true'
         const query = typeof request.query.query === 'string' ? request.query.query : undefined
         const categories = request.query.categories === undefined ? undefined : typeof request.query.categories === 'string' && JSON.parse(request.query.categories)
-        console.log(request)
+
         const ads = await prisma.ads.findMany({
             where: {
                 user_id: {
@@ -69,12 +82,21 @@ export class AdsController {
                 },
                 category: {
                     select: {
+                        id: true,
                         name: true
                     }
                 },
                 user: {
                     select: {
+                        first_name: true,
+                        last_name: true,
                         profile_picture: true
+                    }
+                },
+                location: {
+                    select: {
+                        longitude: true,
+                        latitude: true
                     }
                 }
             }
@@ -89,7 +111,10 @@ export class AdsController {
             description,
             is_new,
             price,
-            category
+            category,
+            is_for_sale,
+            location,
+            is_show_bids,
         } = request.body
         const userId = parseInt(request.user.id);
 
@@ -113,7 +138,19 @@ export class AdsController {
             throw new AppException("Ad must belong to a category.")
         }
 
-        const selectedCategory = await prisma.category.findUnique({
+        if (!is_for_sale) {
+            throw new AppException("Ad must be for sale or rent.")
+        }
+
+        if (!is_show_bids) {
+            throw new AppException("Invalid bidding information.")
+        }
+
+        if (!location || location.length !== 2) {
+            throw new AppException("Ad must belongs to a location.")
+        }
+
+        const selectedCategory = await prisma.categories.findUnique({
             where: {
                 name: category
             },
@@ -126,6 +163,22 @@ export class AdsController {
             throw new AppException("Selected category is invalid.")
         }
 
+        let address = await prisma.locations.findFirst({
+            where: {
+                longitude: location[0],
+                latitude: location[1],
+            },
+        })
+
+        if (!address) {
+            address = await prisma.locations.create({
+                data: {
+                    longitude: location[0],
+                    latitude: location[1],
+                }
+            })
+        }
+
         const ad = await prisma.ads.create({
             data: {
                 description,
@@ -133,9 +186,13 @@ export class AdsController {
                 title,
                 category_id: selectedCategory.id,
                 price,
-                user_id: userId
+                user_id: userId,
+                is_for_sale: is_for_sale,
+                show_bids_info: is_show_bids,
+                location_id: address.id
             }
         })
+
         return response.status(201).json(ad);
     }
 
@@ -144,7 +201,10 @@ export class AdsController {
             title,
             description,
             is_new,
-            price
+            price,
+            is_for_sale,
+            location,
+            is_show_bids,
         } = request.body
         const userId = parseInt(request.user.id);
         const adId = Number(request.params.id)
@@ -163,10 +223,29 @@ export class AdsController {
             throw new AppException("You don't have permission to edit this ad", 401)
         }
 
+        let address = await prisma.locations.findFirst({
+            where: {
+                longitude: location[0],
+                latitude: location[1],
+            },
+        })
+
+        if (!address) {
+            address = await prisma.locations.create({
+                data: {
+                    longitude: location[0],
+                    latitude: location[1],
+                }
+            })
+        }
+
         ad.description = description ?? ad.description
         ad.is_new = is_new ?? ad.is_new
         ad.title = title ?? ad.title
         ad.price = price ?? ad.price
+        ad.location_id = address.id ?? ad.location_id
+        ad.is_for_sale = is_for_sale ?? ad.is_for_sale
+        ad.show_bids_info = is_show_bids ?? ad.show_bids_info
         ad.updated_at = new Date()
 
         await prisma.ads.update({
