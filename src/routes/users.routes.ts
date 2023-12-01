@@ -19,3 +19,4 @@ const upload = multer(MULTER);
 usersRoutes.post("/", upload.single("profile_picture"), usersController.create, userProfilePictureController.create);
 usersRoutes.get("/me", verifyAuthentication, usersController.show);
 usersRoutes.get("/ads", verifyAuthentication, userAdsController.index);
+usersRoutes.put("/update/:id", verifyAuthentication, upload.single("profile_picture"), usersController.update);

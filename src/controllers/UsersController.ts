@@ -86,4 +86,97 @@ export class UsersController {
 
         return next();
     }
+
+    async update(request: Request, response: Response) {
+        const profilePicFile = request.file;
+        const diskManager = new DiskManager();
+
+        const userId : number = parseInt(request.user.id);
+        const requestId : number = parseInt(request.params.id)
+
+        if(userId !== requestId) {
+            if (profilePicFile) {
+                await diskManager.deleteFile(profilePicFile.path)
+            }
+            throw new AppException("User authentication failed!");
+        }
+
+        const {
+            first_name,
+            last_name,
+            phone_number,
+            default_address
+        } = request.body
+
+        console.log(userId, first_name, last_name)
+        if (!first_name || !last_name || !phone_number || !default_address) {
+            if (profilePicFile) {
+                await diskManager.deleteFile(profilePicFile.path)
+            }
+            throw new AppException("Missing text fields");
+        }
+
+        const user = await prisma.users.findUnique({
+            where: {
+                id: userId
+            }
+        })
+
+        if (!user || !user.profile_picture) {
+            if (profilePicFile) {
+                await diskManager.deleteFile(profilePicFile.path)
+            }
+            throw new AppException("User not found.", 404)
+        }
+
+        await diskManager.deleteFile(user.profile_picture)
+
+        const user_address: number[] = default_address.split(",").map(parseFloat);
+
+        if(user_address.length !== 2) {
+            if (profilePicFile) {
+                await diskManager.deleteFile(profilePicFile.path)
+            }
+            throw new AppException("Invalid address.", 404)
+        }
+
+        let address = await prisma.locations.findFirst({
+            where: {
+                longitude: user_address[0],
+                latitude: user_address[1],
+            },
+        })
+
+        if (!address) {
+            address = await prisma.locations.create({
+                data: {
+                    longitude: user_address[0],
+                    latitude: user_address[1],
+                    address_text: "Default address",
+                }
+            })
+        }
+
+        user.first_name = first_name
+        user.last_name = last_name
+        user.phone = phone_number
+        user.address_id = address.id
+        if(profilePicFile) {
+            user.profile_picture = profilePicFile.filename
+        }
+
+        console.log(user)
+        await prisma.users.update({
+            where: {
+                id: userId
+            },
+            data: {
+                ...user
+            }
+        })
+        const { password: removeField, ...rest } = user;
+
+        console.log({...rest})
+        return response.status(200).json({ user: {...rest}});
+    }
 }
