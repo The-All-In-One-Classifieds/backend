@@ -7,5 +7,8 @@ npx prisma migrate dev --name init
 Run script.ts
 npx ts-node ./prisma/script.ts
 
-Overview
+Generate prisma client
+npx prisma generate
+
+Open database
 npx prisma studio

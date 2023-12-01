@@ -116,6 +116,7 @@ export class AdsController {
             location,
             allow_bidding,
         } = request.body
+        console.log("Bidding ", allow_bidding)
         const userId = parseInt(request.user.id);
 
         if (!title) {
@@ -142,7 +143,7 @@ export class AdsController {
             throw new AppException("Ad must be for sale or rent.")
         }
 
-        if (!allow_bidding) {
+        if (allow_bidding === undefined) {
             throw new AppException("Invalid bidding information.")
         }
 
