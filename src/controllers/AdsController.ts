@@ -114,7 +114,7 @@ export class AdsController {
             category,
             is_for_sale,
             location,
-            is_show_bids,
+            allow_bidding,
         } = request.body
         const userId = parseInt(request.user.id);
 
@@ -142,7 +142,7 @@ export class AdsController {
             throw new AppException("Ad must be for sale or rent.")
         }
 
-        if (!is_show_bids) {
+        if (!allow_bidding) {
             throw new AppException("Invalid bidding information.")
         }
 
@@ -175,6 +175,7 @@ export class AdsController {
                 data: {
                     longitude: location[0],
                     latitude: location[1],
+                    address_text: "Default address"
                 }
             })
         }
@@ -188,7 +189,7 @@ export class AdsController {
                 price,
                 user_id: userId,
                 is_for_sale: is_for_sale,
-                show_bids_info: is_show_bids,
+                allow_bidding: allow_bidding,
                 location_id: address.id
             }
         })
@@ -204,7 +205,7 @@ export class AdsController {
             price,
             is_for_sale,
             location,
-            is_show_bids,
+            allow_bidding,
         } = request.body
         const userId = parseInt(request.user.id);
         const adId = Number(request.params.id)
@@ -245,7 +246,7 @@ export class AdsController {
         ad.price = price ?? ad.price
         ad.location_id = address.id ?? ad.location_id
         ad.is_for_sale = is_for_sale ?? ad.is_for_sale
-        ad.show_bids_info = is_show_bids ?? ad.show_bids_info
+        ad.allow_bidding = allow_bidding ?? ad.allow_bidding
         ad.updated_at = new Date()
 
         await prisma.ads.update({

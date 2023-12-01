@@ -53,7 +53,7 @@ model Ads {
   expires_on           DateTime          @default(now())
   is_for_sale          Boolean
   location_id          Int               @unique
-  show_bids_info       Boolean
+  allow_bidding        Boolean
   ad_images            AdImages[]
   category             Categories        @relation(fields: [category_id], references: [id])
   location             Locations         @relation(fields: [location_id], references: [id])
