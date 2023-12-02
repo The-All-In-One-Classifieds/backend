@@ -237,6 +237,7 @@ export class AdsController {
                 data: {
                     longitude: location[0],
                     latitude: location[1],
+                    address_text: "Default Address",
                 }
             })
         }
