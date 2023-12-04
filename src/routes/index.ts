@@ -4,6 +4,7 @@ import { usersRoutes } from "./users.routes";
 import { sessionsRoutes } from "./sessions.routes";
 import { adsRoutes } from "./ads.routes";
 import { adImagesRoutes } from "./adsImages.routes";
+import {categoriesRouter} from "./categories.routes";
 
 export const routes = Router();
 
@@ -12,3 +13,5 @@ routes.use("/sessions", sessionsRoutes);
 
 routes.use("/ads/images", adImagesRoutes);
 routes.use("/ads", adsRoutes);
+
+routes.use("/categories", categoriesRouter);
