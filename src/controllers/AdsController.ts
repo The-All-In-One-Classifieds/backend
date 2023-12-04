@@ -55,18 +55,47 @@ export class AdsController {
         const userId = parseInt(request.user.id);
 
         const is_new = request.query.is_new === undefined ? undefined : request.query.is_new === 'true'
+        const sortString = request.query?.order
+        const categoriesStr: string[] = Array.isArray(request.query.categories)
+            ? (request.query.categories as string[])
+            : [];
         const query = typeof request.query.query === 'string' ? request.query.query : undefined
-        const categories = request.query.categories === undefined ? undefined : typeof request.query.categories === 'string' && JSON.parse(request.query.categories)
+
+        let whereCondition: any = {}; // Default empty where condition
+
+        const categories: number[] = categoriesStr?.map(Number);
+
+        console.log("filters\n", is_new, "\n", sortString, "\n", categories)
+        if (categories?.length && categories?.length) {
+            whereCondition.category_id = {
+                in: categories,
+            };
+        }
+        whereCondition.user_id = {
+            not: userId,
+        };
+        whereCondition.is_new = is_new;
+        if (query) {
+            whereCondition.title = {
+                contains: query,
+            };
+        }
+
+        let sortField = 'updated_at';
+        let sortOrder = 'asc';
+
+        if (sortString && typeof sortString === 'string') {
+            const [field, order] = sortString.split(' ');
+            if (field && order) {
+                sortField = field;
+                sortOrder = order.toLowerCase() === 'asc' ? 'asc' : 'desc';
+            }
+        }
 
         const ads = await prisma.ads.findMany({
-            where: {
-                user_id: {
-                    not: userId
-                },
-                is_new,
-                title: {
-                    contains: query
-                }
+            where: whereCondition,
+            orderBy: {
+                [sortField]: sortOrder,
             },
             select: {
                 id: true,
@@ -98,7 +127,7 @@ export class AdsController {
                         longitude: true,
                         latitude: true
                     }
-                }
+                },
             }
         })
 

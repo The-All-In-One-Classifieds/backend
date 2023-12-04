@@ -75,6 +75,7 @@ model AdImages {
 model Categories {
   id                 Int          @id @default(autoincrement())
   name               String       @unique
+  has_childs         Boolean
   parent_category_id Int?
   Ads                Ads[]
   parent_category    Categories?  @relation("Child_categories", fields: [parent_category_id], references: [id])
