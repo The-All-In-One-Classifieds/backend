@@ -104,15 +104,16 @@ model UserFavoriteAds {
 }
 
 model UserAdsBids {
+  id         Int      @id @default(autoincrement())
   ad_id      Int
   user_id    Int
   bid_amount Int
   is_sent    Boolean
+  message    String
   status     String
-  ad         Ads     @relation(fields: [ad_id], references: [id])
-  user       Users   @relation(fields: [user_id], references: [id])
-
-  @@id([ad_id, user_id])
+  created_at DateTime
+  ad         Ads      @relation(fields: [ad_id], references: [id])
+  user       Users    @relation(fields: [user_id], references: [id])
 }
 
 model Reviews {

@@ -69,7 +69,7 @@ export class UserAdsController {
     const adsWithFavoritesCount = modifiedAds.map((ad, index) => ({
       ...ad,
       favorites_count: favoritesCount[index], // Assign the favorites count to each ad,
-      bids_count: bidsCount[index]
+      bids_count: bidsCount[index] / 2
     }));
 
     console.log(adsWithFavoritesCount);

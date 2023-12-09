@@ -66,7 +66,7 @@ export class AdsController {
         });
 
         const isUsersFavorite = ad.in_user_favorite_ads.length > 0;
-        const resultAd = {...ad, is_users_favorite: isUsersFavorite, favorites_count: favoriteCount, bids_count: bidsCount};
+        const resultAd = {...ad, is_users_favorite: isUsersFavorite, favorites_count: favoriteCount, bids_count: bidsCount / 2};
 
         return response.json(resultAd);
     }
