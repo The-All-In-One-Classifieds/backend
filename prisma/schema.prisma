@@ -29,6 +29,7 @@ model Users {
   bids              UserAdsBids[]
   favorite_ads      UserFavoriteAds[]
   address           Locations?        @relation(fields: [address_id], references: [id])
+  app_review        AppReviews?
 }
 
 model RefreshTokens {
@@ -141,4 +142,12 @@ model Messages {
   is_seen     Boolean
   receiver    Users    @relation("message_receiver", fields: [receiver_id], references: [id])
   sender      Users    @relation("message_sender", fields: [sender_id], references: [id])
+}
+
+model AppReviews {
+  id      Int    @id @default(autoincrement())
+  user_id Int    @unique
+  user    Users  @relation(fields: [user_id], references: [id])
+  stars   Int
+  review  String
 }
