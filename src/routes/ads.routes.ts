@@ -13,5 +13,6 @@ adsRoutes.get("/", adsController.index);
 adsRoutes.get("/:id", adsController.show);
 adsRoutes.post("/", adsController.create);
 adsRoutes.put("/:id", adsController.update);
+adsRoutes.put("/toggle-favorites/:id", adsController.toggleAdInFavorites);
 adsRoutes.patch("/:id", adsController.patch);
 adsRoutes.delete("/:id", adsController.delete);

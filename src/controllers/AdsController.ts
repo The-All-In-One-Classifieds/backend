@@ -9,6 +9,7 @@ import {loadavg} from "os";
 export class AdsController {
     async show(request: Request, response: Response) {
         const adId = Number(request.params.id);
+        const userId = parseInt(request.user.id);
 
         const ad = await prisma.ads.findUnique({
             where: {
@@ -40,7 +41,15 @@ export class AdsController {
                         id: true,
                         name: true
                     }
-                }
+                },
+                in_user_favorite_ads: {
+                    where: {
+                        user_id: userId
+                    },
+                    select: {
+                        ad_id: true
+                    }
+                },
             }
         })
 
@@ -48,7 +57,18 @@ export class AdsController {
             throw new AppException('Ad not found.', 404);
         }
 
-        return response.json(ad);
+        const favoriteCount = await prisma.userFavoriteAds.count({
+            where: {ad_id: adId},
+        });
+
+        const bidsCount = await prisma.userAdsBids.count({
+            where: {ad_id: adId},
+        });
+
+        const isUsersFavorite = ad.in_user_favorite_ads.length > 0;
+        const resultAd = {...ad, is_users_favorite: isUsersFavorite, favorites_count: favoriteCount, bids_count: bidsCount};
+
+        return response.json(resultAd);
     }
 
     async index(request: Request, response: Response) {
@@ -361,6 +381,41 @@ export class AdsController {
                 id: adId
             }
         })
+
+        return response.status(204).json();
+    }
+
+    async toggleAdInFavorites(request: Request, response: Response) {
+        const adId = Number(request.params.id);
+        const userId = parseInt(request.user.id);
+        const existingFavorite = await prisma.userFavoriteAds.findUnique({
+            where: {
+                ad_id_user_id: {
+                    ad_id: adId,
+                    user_id: userId,
+                },
+            },
+        });
+
+        if (existingFavorite) {
+            // If the ad exists in the user's favorites, remove it
+            await prisma.userFavoriteAds.delete({
+                where: {
+                    ad_id_user_id: {
+                        ad_id: adId,
+                        user_id: userId,
+                    },
+                },
+            });
+        } else {
+            // If the ad doesn't exist in the user's favorites, add it
+            await prisma.userFavoriteAds.create({
+                data: {
+                    ad_id: adId,
+                    user_id: userId,
+                },
+            });
+        }
 
         return response.status(204).json();
     }
