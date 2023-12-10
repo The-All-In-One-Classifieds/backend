@@ -1,6 +1,7 @@
 import {Request, Response} from "express";
 import {prisma} from "../db";
 import {AppException} from "../common/AppException";
+import {stat} from "fs";
 
 export class BidsController {
     async create(request: Request, response: Response) {
@@ -39,25 +40,26 @@ export class BidsController {
             throw new AppException("You cannot place bid on your own ad")
         }
 
-        const bidInfoBuyer = await prisma.userAdsBids.create({
-            data: {
-                user_id: buyerId,
-                ad_id: adId,
+        const existing = await prisma.userAdsBids.findMany({
+            where: {
+                sender_id: buyerId,
+                receiver_id: sellerId,
                 bid_amount: bidAmount,
-                status: 'pending',
-                is_sent: true,
-                message: message,
-                created_at: new Date()
+                status: 'pending'
             }
         })
 
-        const bidInfoSeller = await prisma.userAdsBids.create({
+        if(existing.length > 0) {
+            throw new AppException("An existing bid with same configuration is pending")
+        }
+
+        const bidInfo = await prisma.userAdsBids.create({
             data: {
-                user_id: sellerId,
+                sender_id: buyerId,
+                receiver_id: sellerId,
                 ad_id: adId,
                 bid_amount: bidAmount,
                 status: 'pending',
-                is_sent: false,
                 message: message,
                 created_at: new Date()
             }
@@ -68,11 +70,23 @@ export class BidsController {
 
     async userBids(request: Request, response: Response) {
         const userId = parseInt(request.user.id);
+        const bidType = request.query.type
+
+        const isSent = !(bidType === 'received')
+
+        let whereCondition : any = {}
+        if(isSent) {
+            whereCondition = {
+                sender_id: userId
+            }
+        } else {
+            whereCondition = {
+                receiver_id: userId
+            }
+        }
 
         const bids = await prisma.userAdsBids.findMany({
-            where: {
-                user_id: userId
-            },
+            where: whereCondition,
             include: {
                 ad: {
                     select: {
@@ -102,5 +116,49 @@ export class BidsController {
 
         console.log("Response   \n", bids)
         return response.status(200).json(bids);
+    }
+
+    async update(request: Request, response: Response) {
+        const userId = parseInt(request.user.id);
+        const bidId = Number(request.body.bid_id)
+        const status = String(request.body.status);
+
+        if(!(status === 'accepted' || status === 'rejected')) {
+            throw new AppException("Status is not valid")
+        }
+
+        const existing = await prisma.userAdsBids.findMany({
+            where: {
+                id: bidId
+            }
+        })
+
+        console.log("checkpoint   ", existing);
+
+        if(existing.length === 0) {
+            throw new AppException("Bid does not exist")
+        }
+
+        const bid = existing[0];
+        if(bid.receiver_id !== userId) {
+            throw new AppException("You cannot modify this bid");
+        }
+
+        if(bid.status !== 'pending') {
+            throw new AppException("Bid has already been accepted/rejected");
+        }
+
+        bid.status = status;
+
+        await prisma.userAdsBids.update({
+            where: {
+                id: bidId
+            },
+            data: {
+                ...bid
+            }
+        })
+
+        return response.status(204).json()
     }
 }

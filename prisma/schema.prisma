@@ -26,7 +26,8 @@ model Users {
   messages_sent     Messages[]        @relation("message_sender")
   user_token        RefreshTokens?
   reviews           Reviews[]
-  bids              UserAdsBids[]
+  bids_sent         UserAdsBids[]     @relation("BidsSent")
+  bids_received     UserAdsBids[]     @relation("BidsReceived")
   favorite_ads      UserFavoriteAds[]
   address           Locations?        @relation(fields: [address_id], references: [id])
   app_review        AppReviews?
@@ -53,7 +54,7 @@ model Ads {
   updated_at           DateTime          @default(now())
   expires_on           DateTime          @default(now())
   is_for_sale          Boolean
-  location_id          Int               @unique
+  location_id          Int
   allow_bidding        Boolean
   ad_images            AdImages[]
   category             Categories        @relation(fields: [category_id], references: [id])
@@ -87,7 +88,7 @@ model Locations {
   id           Int     @id @default(autoincrement())
   longitude    Decimal
   latitude     Decimal
-  ad           Ads?
+  ad           Ads[]
   address_text String
   user         Users[]
 
@@ -104,16 +105,17 @@ model UserFavoriteAds {
 }
 
 model UserAdsBids {
-  id         Int      @id @default(autoincrement())
-  ad_id      Int
-  user_id    Int
-  bid_amount Int
-  is_sent    Boolean
-  message    String
-  status     String
-  created_at DateTime
-  ad         Ads      @relation(fields: [ad_id], references: [id])
-  user       Users    @relation(fields: [user_id], references: [id])
+  id          Int      @id @default(autoincrement())
+  ad_id       Int
+  sender_id   Int
+  receiver_id Int
+  bid_amount  Int
+  message     String
+  status      String
+  created_at  DateTime
+  ad          Ads      @relation(fields: [ad_id], references: [id])
+  sender      Users    @relation("BidsSent", fields: [sender_id], references: [id])
+  receiver    Users    @relation("BidsReceived", fields: [receiver_id], references: [id])
 }
 
 model Reviews {

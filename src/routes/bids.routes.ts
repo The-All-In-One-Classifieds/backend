@@ -10,3 +10,4 @@ bidsRouter.use(verifyAuthentication);
 
 bidsRouter.post("/", bidsController.create);
 bidsRouter.get("/", bidsController.userBids);
+bidsRouter.put("/", bidsController.update);
