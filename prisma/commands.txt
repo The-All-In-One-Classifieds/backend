@@ -12,3 +12,4 @@ npx prisma generate
 
 Open database
 npx prisma studio
+
