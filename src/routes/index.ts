@@ -7,6 +7,7 @@ import { adImagesRoutes } from "./adsImages.routes";
 import {categoriesRouter} from "./categories.routes";
 import {bidsRouter} from "./bids.routes";
 import {feedbackRouter} from "./feedback.routes";
+import {userFeedbackRouter} from "./UserFeedback.routes";
 
 export const routes = Router();
 
@@ -20,3 +21,4 @@ routes.use("/categories", categoriesRouter);
 
 routes.use("/bids", bidsRouter);
 routes.use("/app-feedback", feedbackRouter);
+routes.use("/review", userFeedbackRouter);
