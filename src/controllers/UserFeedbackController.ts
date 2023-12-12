@@ -27,6 +27,8 @@ export class UserFeedbackController {
             throw new AppException("Select the user to which you want to send review")
         }
 
+        // TODO : verify that user is able to review
+
         //table name + database functions
         const reviewInfo = await prisma.reviews.create({
 
@@ -34,8 +36,9 @@ export class UserFeedbackController {
             data: {
                 comment: review,
                 stars: rating,
-                user_id: reviewerId,
-                reviewed_user_id: receiverid,
+                user_id: receiverid,
+                reviewer_user_id: reviewerId,
+                created_at: new Date()
             }
         })
 
@@ -48,6 +51,15 @@ export class UserFeedbackController {
             where: {
                 user_id: userId
             },
+            include: {
+                reviewer: {
+                    select: {
+                        first_name: true,
+                        last_name: true,
+                        profile_picture: true,
+                    }
+                }
+            }
         })
 
         if(!UserFeedback){

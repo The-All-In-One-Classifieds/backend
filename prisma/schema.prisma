@@ -25,7 +25,8 @@ model Users {
   messages_received Messages[]        @relation("message_receiver")
   messages_sent     Messages[]        @relation("message_sender")
   user_token        RefreshTokens?
-  reviews           Reviews[]
+  reviews_sent      Reviews[]         @relation("reviews_sent")
+  reviews_received  Reviews[]         @relation("reviews_received")
   bids_sent         UserAdsBids[]     @relation("BidsSent")
   bids_received     UserAdsBids[]     @relation("BidsReceived")
   favorite_ads      UserFavoriteAds[]
@@ -119,12 +120,14 @@ model UserAdsBids {
 }
 
 model Reviews {
-  id               Int    @id @default(autoincrement())
+  id               Int      @id @default(autoincrement())
   stars            Int
   comment          String
-  reviewed_user_id Int
+  reviewer_user_id Int
+  reviewer         Users    @relation("reviews_sent", fields: [reviewer_user_id], references: [id])
   user_id          Int
-  user             Users  @relation(fields: [user_id], references: [id])
+  user             Users    @relation("reviews_received", fields: [user_id], references: [id])
+  created_at       DateTime
 }
 
 model Chats {
