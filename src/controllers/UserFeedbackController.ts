@@ -47,7 +47,7 @@ export class UserFeedbackController {
 
     async show(request: Request, response: Response){
         const userId = parseInt(request.user.id);
-        const UserFeedback = await prisma.reviews.findFirst({
+        const UserFeedback = await prisma.reviews.findMany({
             where: {
                 user_id: userId
             },
@@ -61,9 +61,9 @@ export class UserFeedbackController {
                 }
             }
         })
-
+        console.log("Feedback  ", UserFeedback)
         if(!UserFeedback){
-            return response.status(200).json({})
+            return response.status(200).json([])
         }
         return response.status(200).json(UserFeedback)
     }
