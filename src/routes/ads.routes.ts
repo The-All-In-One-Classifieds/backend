@@ -16,3 +16,7 @@ adsRoutes.put("/:id", adsController.update);
 adsRoutes.put("/toggle-favorites/:id", adsController.toggleAdInFavorites);
 adsRoutes.patch("/:id", adsController.patch);
 adsRoutes.delete("/:id", adsController.delete);
+adsRoutes.get("/:id/bids/users", adsController.getBidsUsers)
+
+//  /ads /:id/bids/users
+// www.website.com/ads/5/bids/users

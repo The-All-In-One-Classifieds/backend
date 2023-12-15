@@ -5,6 +5,7 @@ import {DiskManager} from "../services/DiskManager";
 
 import {AppException} from "../common/AppException";
 import {loadavg} from "os";
+import * as trace_events from "trace_events";
 
 export class AdsController {
     async show(request: Request, response: Response) {
@@ -418,5 +419,32 @@ export class AdsController {
         }
 
         return response.status(204).json();
+    }
+
+    async getBidsUsers(request: Request, response: Response) {
+        const adId = Number(request.params.id);
+        const userId = parseInt(request.user.id);
+
+        const result = await prisma.userAdsBids.findMany({
+            where: {
+                ad_id: adId,
+                receiver_id: userId,
+                status: 'accepted'
+            },
+            select: {
+                sender: {
+                    select: {
+                        profile_picture: true,
+                        first_name: true,
+                        last_name: true,
+                    }
+                }
+            }
+        })
+
+        if(!result){
+            return response.status(200).json([])
+        }
+        return response.status(200).json(result)
     }
 }
