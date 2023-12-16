@@ -434,6 +434,7 @@ export class AdsController {
             select: {
                 sender: {
                     select: {
+                        id : true,
                         profile_picture: true,
                         first_name: true,
                         last_name: true,
