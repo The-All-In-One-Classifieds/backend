@@ -5,6 +5,7 @@ import {AppException} from "../common/AppException";
 import {prisma} from "../db";
 import {DiskManager} from "../services/DiskManager";
 import {Console} from "inspector";
+import {parse} from "url";
 
 export class UsersController {
     async show(request: Request, response: Response) {
@@ -178,5 +179,92 @@ export class UsersController {
 
         console.log({...rest})
         return response.status(200).json({ user: {...rest}});
+    }
+
+    async getUser(request: Request, response: Response) {
+        const userId = Number(request.params.id);
+        const currentUserId = parseInt(request.user.id)
+
+        const userDetails = await prisma.users.findUnique({
+            where: {
+                id: userId
+            },
+            select: {
+                profile_picture: true,
+                first_name: true,
+                last_name: true,
+            }
+        })
+
+        const adsTemp = await prisma.ads.findMany({
+            where: {
+                user_id: userId,
+                is_active: true,
+            },
+            include: {
+                ad_images: {
+                    select: {
+                        path: true,
+                        name: true,
+                    }
+                },
+                category: {
+                    select: {
+                        name: true
+                    }
+                },
+                location: {
+                    select: {
+                        longitude: true,
+                        latitude: true
+                    }
+                },
+                in_user_favorite_ads: {
+                    where: {
+                        user_id: currentUserId // Filter by the current user's ID
+                    },
+                    select: {
+                        user_id: true
+                    }
+                }
+            }
+        });
+
+        const modifiedAds = adsTemp.map(ad => {
+            const is_users_favorite = ad.in_user_favorite_ads.length > 0; // Check if the ad is in user's favorites
+            return {
+                ...ad,
+                is_users_favorite
+            };
+        });
+
+        const favoritesCountPromises = adsTemp.map(async ad => {
+            return prisma.userFavoriteAds.count({
+                where: {
+                    ad_id: ad.id
+                }
+            });
+        });
+
+        const bidsCountPromises = adsTemp.map(async ad => {
+            return prisma.userAdsBids.count({
+                where: {
+                    ad_id: ad.id
+                }
+            });
+        });
+
+        const favoritesCount = await Promise.all(favoritesCountPromises);
+        const bidsCount = await Promise.all(bidsCountPromises);
+
+        const ads = modifiedAds.map((ad, index) => ({
+            ...ad,
+            favorites_count: favoritesCount[index], // Assign the favorites count to each ad,
+            bids_count: bidsCount[index]
+        }));
+
+        const result = {user: userDetails, ads: ads}
+        console.log(result)
+        return response.status(200).json(result)
     }
 }

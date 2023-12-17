@@ -46,7 +46,8 @@ export class UserFeedbackController {
     }
 
     async show(request: Request, response: Response){
-        const userId = parseInt(request.user.id);
+        const userId = parseInt(request.params.id);
+        console.log(userId)
         const UserFeedback = await prisma.reviews.findMany({
             where: {
                 user_id: userId
@@ -54,6 +55,7 @@ export class UserFeedbackController {
             include: {
                 reviewer: {
                     select: {
+                        id: true,
                         first_name: true,
                         last_name: true,
                         profile_picture: true,

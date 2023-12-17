@@ -25,6 +25,7 @@ export class AdsController {
                 },
                 user: {
                     select: {
+                        id: true,
                         profile_picture: true,
                         first_name: true,
                         last_name: true,
@@ -67,7 +68,7 @@ export class AdsController {
         });
 
         const isUsersFavorite = ad.in_user_favorite_ads.length > 0;
-        const resultAd = {...ad, is_users_favorite: isUsersFavorite, favorites_count: favoriteCount, bids_count: bidsCount / 2};
+        const resultAd = {...ad, is_users_favorite: isUsersFavorite, favorites_count: favoriteCount, bids_count: bidsCount};
 
         return response.json(resultAd);
     }
@@ -138,6 +139,7 @@ export class AdsController {
                 },
                 user: {
                     select: {
+                        id: true,
                         first_name: true,
                         last_name: true,
                         profile_picture: true

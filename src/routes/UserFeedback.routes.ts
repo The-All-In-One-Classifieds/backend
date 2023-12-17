@@ -10,4 +10,4 @@ const userFeedbackController = new UserFeedbackController();
 userFeedbackRouter.use(verifyAuthentication);
 
 userFeedbackRouter.post("/", userFeedbackController.create);
-userFeedbackRouter.get("/", userFeedbackController.show);
+userFeedbackRouter.get("/:id", userFeedbackController.show);
