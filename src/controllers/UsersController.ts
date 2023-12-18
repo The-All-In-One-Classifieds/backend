@@ -6,10 +6,11 @@ import {prisma} from "../db";
 import {DiskManager} from "../services/DiskManager";
 import {Console} from "inspector";
 import {parse} from "url";
+import {ServerResponse} from "http";
 
 export class UsersController {
     async show(request: Request, response: Response) {
-        const userId : number = parseInt(request.user.id);
+        const userId: number = parseInt(request.user.id);
 
         const user = await prisma.users.findUnique({
             where: {
@@ -92,10 +93,10 @@ export class UsersController {
         const profilePicFile = request.file;
         const diskManager = new DiskManager();
 
-        const userId : number = parseInt(request.user.id);
-        const requestId : number = parseInt(request.params.id)
+        const userId: number = parseInt(request.user.id);
+        const requestId: number = parseInt(request.params.id)
 
-        if(userId !== requestId) {
+        if (userId !== requestId) {
             if (profilePicFile) {
                 await diskManager.deleteFile(profilePicFile.path)
             }
@@ -134,7 +135,7 @@ export class UsersController {
 
         const user_address: number[] = default_address.split(",").map(parseFloat);
 
-        if(user_address.length !== 2) {
+        if (user_address.length !== 2) {
             if (profilePicFile) {
                 await diskManager.deleteFile(profilePicFile.path)
             }
@@ -162,7 +163,7 @@ export class UsersController {
         user.last_name = last_name
         user.phone = phone_number
         user.address_id = address.id
-        if(profilePicFile) {
+        if (profilePicFile) {
             user.profile_picture = profilePicFile.filename
         }
 
@@ -175,10 +176,10 @@ export class UsersController {
                 ...user
             }
         })
-        const { password: removeField, ...rest } = user;
+        const {password: removeField, ...rest} = user;
 
         console.log({...rest})
-        return response.status(200).json({ user: {...rest}});
+        return response.status(200).json({user: {...rest}});
     }
 
     async getUser(request: Request, response: Response) {
@@ -266,5 +267,21 @@ export class UsersController {
         const result = {user: userDetails, ads: ads}
         console.log(result)
         return response.status(200).json(result)
+    }
+
+    async validate(request: Request, response: Response) {
+        const userEmail = request.query.email;
+
+        if (!userEmail) {
+            throw new AppException("Invalid email provided")
+        }
+
+        const userData = await prisma.users.findUnique({
+            where: {
+                email: String(userEmail)
+            }
+        });
+        console.log("backend user data", userData)
+        return response.status(200).json(userData?.email);
     }
 }

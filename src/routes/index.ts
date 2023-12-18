@@ -27,4 +27,5 @@ routes.use("/bids", bidsRouter);
 routes.use("/app-feedback", feedbackRouter);
 
 routes.use("/review", userFeedbackRouter);
+routes.use("/verifyEmail", usersRoutes)
 
