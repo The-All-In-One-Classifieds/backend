@@ -43,12 +43,14 @@ export class VerificationController {
                 otp: OTP,
                 created_at: currentTime,
                 expires_at: expiryTime,
+                token: "",
             },
             create: {
                 email: userEmail,
                 otp: OTP,
                 created_at: currentTime,
                 expires_at: expiryTime,
+                token: "",
             }
         });
 
@@ -86,6 +88,33 @@ export class VerificationController {
             throw new AppException("OTP has been expired")
         }
 
-        return response.status(204).json();
+        const token = this.generateRandomString(100);
+        const expiryTime = new Date(currentTime.getTime());
+        expiryTime.setMinutes(currentTime.getMinutes() + 5);
+
+        otpData.created_at = currentTime
+        otpData.expires_at = expiryTime
+        otp.token = token
+
+        await prisma.emailVerification.update({
+            where: {
+                id: otpData.id
+            },
+            data: {
+                ...otpData
+            }
+        })
+        
+        return response.status(200).json({token: token});
+    }
+
+    generateRandomString(length: number): string {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
+        let result = '';
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
     }
 }
