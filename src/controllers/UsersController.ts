@@ -89,6 +89,67 @@ export class UsersController {
         return next();
     }
 
+    async updatePassword(request: Request, response: Response) {
+        const userEmail = request.body.email;
+        const token = request.body.token;
+        const password = request.body.password;
+        const hashedPassword = await hash(password, 8);
+
+        if(!userEmail) {
+            throw new AppException("Invalid email provided")
+        }
+
+        if(!token) {
+            throw new AppException("Invalid token provided")
+        }
+
+        if(!token) {
+            throw new AppException("Password not provided")
+        }
+
+        const tokenData = await prisma.emailVerification.findUnique({
+            where: {
+                email: userEmail
+            }
+        });
+
+        if(!tokenData) {
+            throw new AppException("Token doesnot exist")
+        }
+
+        if(tokenData.token !== token) {
+            throw new AppException("Incorrect Token")
+        }
+
+        const currentTime = new Date();
+        if (tokenData.expires_at < currentTime) {
+            throw new AppException("Token has been expired")
+        }
+
+        const user = await prisma.users.findUnique({
+            where: {
+                email: userEmail
+            },
+        })
+
+        if (!user){
+            throw new AppException("User does not exist")
+        }
+
+        user.password = hashedPassword
+        await prisma.users.update({
+            where:{
+                id : user.id
+            },
+            data:{
+                ...user
+            }
+        })
+
+        //204 = api successfull not returning anything
+        return response.status(204).json();
+    }
+
     async update(request: Request, response: Response) {
         const profilePicFile = request.file;
         const diskManager = new DiskManager();
