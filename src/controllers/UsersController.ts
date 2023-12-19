@@ -1,4 +1,4 @@
-import {hash} from "bcryptjs";
+import {compare, hash} from "bcryptjs";
 import {NextFunction, Request, Response} from "express";
 
 import {AppException} from "../common/AppException";
@@ -145,6 +145,58 @@ export class UsersController {
                 ...user
             }
         })
+
+        //204 = api successfull not returning anything
+        return response.status(204).json();
+    }
+
+    async passwordChange(request: Request, response: Response) {
+        console.log("Inside password change")
+        const UserId = parseInt(request.user.id);
+        const newPassword = request.body.new_password;
+        const oldPassword = request.body.old_password;
+        const hashedPassword = await hash(newPassword, 8);
+
+        console.log("New Password",newPassword)
+        console.log("old password", oldPassword)
+
+        const user = await prisma.users.findUnique({
+            where: {
+                id: UserId
+            },
+            select: {
+                password: true
+            }
+        })
+
+        if (!user){
+            throw new AppException("User does not exist")
+        }
+
+        if(!newPassword) {
+            throw new AppException("Password not Provided")
+        }
+
+        if(!oldPassword) {
+            throw new AppException("Old Password not Provided")
+        }
+
+        const passwordMatched = await compare(oldPassword, user.password);
+
+        if (!passwordMatched) {
+            throw new AppException("Incorrect password");
+        }
+
+        user.password = hashedPassword
+        await prisma.users.update({
+            where:{
+                id : UserId
+            },
+            data:{
+                ...user
+            }
+        })
+        console.log("Password updated")
 
         //204 = api successfull not returning anything
         return response.status(204).json();

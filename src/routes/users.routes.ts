@@ -23,3 +23,4 @@ usersRoutes.get("/ads", verifyAuthentication, userAdsController.index);
 usersRoutes.put("/update/:id", verifyAuthentication, upload.single("profile_picture"), usersController.update);
 usersRoutes.get("/emailValidation", usersController.validate);
 usersRoutes.put("/update-password", usersController.updatePassword);
+usersRoutes.put("/password-change", verifyAuthentication, usersController.passwordChange);
