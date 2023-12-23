@@ -1,0 +1,3 @@
+url for postman
+
+ws://localhost:2339/?EIO=4&transport=websocket
