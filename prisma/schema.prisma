@@ -63,6 +63,7 @@ model Ads {
   user                 Users             @relation("user_ads", fields: [user_id], references: [id])
   bids                 UserAdsBids[]
   in_user_favorite_ads UserFavoriteAds[]
+  chats                Chats[]
 }
 
 model AdImages {
@@ -131,21 +132,29 @@ model Reviews {
 }
 
 model Chats {
+  id            Int        @id @default(autoincrement())
   member_one_id Int
   member_two_id Int
-  member_one    Users @relation("member_one", fields: [member_one_id], references: [id])
-  member_two    Users @relation("member_two", fields: [member_two_id], references: [id])
+  ad_id         Int
+  member_one    Users      @relation("member_one", fields: [member_one_id], references: [id])
+  member_two    Users      @relation("member_two", fields: [member_two_id], references: [id])
+  ad            Ads        @relation(fields: [ad_id], references: [id])
+  last_message  String
+  updated_at    DateTime
+  messages      Messages[]
 
-  @@id([member_one_id, member_two_id])
+  @@unique([member_one_id, member_two_id, ad_id])
 }
 
 model Messages {
   id          Int      @id @default(autoincrement())
   sender_id   Int
   receiver_id Int
+  chat_id     Int
   content     String
   created_at  DateTime
   is_seen     Boolean
+  chat        Chats    @relation(fields: [chat_id], references: [id])
   receiver    Users    @relation("message_receiver", fields: [receiver_id], references: [id])
   sender      Users    @relation("message_sender", fields: [sender_id], references: [id])
 }

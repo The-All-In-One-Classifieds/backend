@@ -8,8 +8,9 @@ import { routes } from './routes';
 import { AppException } from './common/AppException';
 import { UPLOADS_FOLDER } from './configs/uploadConfig';
 
-import http from 'http';
+import {createServer} from 'http';
 import { Server } from 'socket.io';
+import {initializeSocketIO} from './socket'
 
 const app = express();
 
@@ -17,27 +18,27 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const httpServer = http.createServer(app);
+const httpServer = createServer(app);
 const io = new Server(httpServer, {
-    // Socket.IO options here
+    pingTimeout: 60000,
 });
+app.set("io", io); // using set method to mount the `io` instance on the app to avoid usage of `global`
+initializeSocketIO(io);
 
-console.log("Server Starting...");
-io.on('connection', (socket) => {
-    console.log('A user connected: ', socket.id);
-
-    socket.on('disconnect', (reason) => {
-        console.log(`User disconnected: ${socket.id}, Reason: ${reason}`);
-    });
-
-    // Example of handling a custom chat event
-    socket.on('chat message', (msg) => {
-        console.log(`Message received from ${socket.id}: ${msg}`);
-        io.emit('chat message', "Hi")
-        // You can emit a response or handle the message here
-    });
-});
-
+// io.on('connection', (socket) => {
+//     console.log('A user connected: ', socket.id);
+//
+//     socket.on('disconnect', (reason) => {
+//         console.log(`User disconnected: ${socket.id}, Reason: ${reason}`);
+//     });
+//
+//     // Example of handling a custom chat event
+//     socket.on('chat message', (msg) => {
+//         console.log(`Message received from ${socket.id}: ${msg}`);
+//         io.emit('chat message', "Hi")
+//         // You can emit a response or handle the message here
+//     });
+// });
 
 app.use("/images", express.static(UPLOADS_FOLDER));
 
