@@ -9,6 +9,7 @@ import {bidsRouter} from "./bids.routes";
 import {feedbackRouter} from "./feedback.routes";
 import {userFeedbackRouter} from "./UserFeedback.routes";
 import {verificationRoutes} from "./verification.routes";
+import {chatsRouter} from "./chats.routes";
 
 export const routes = Router();
 
@@ -28,3 +29,4 @@ routes.use("/app-feedback", feedbackRouter);
 
 routes.use("/review", userFeedbackRouter);
 
+routes.use("/chats", chatsRouter)
