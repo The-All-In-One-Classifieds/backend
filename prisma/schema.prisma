@@ -8,30 +8,29 @@ datasource db {
 }
 
 model Users {
-  id                Int               @id @default(autoincrement())
-  first_name        String
-  last_name         String
-  email             String            @unique
-  phone             String            @unique
-  password          String
-  profile_picture   String?
-  created_at        DateTime          @default(now())
-  updated_at        DateTime          @default(now())
-  address_id        Int?
-  rating            Float?
-  ads               Ads[]             @relation("user_ads")
-  member_one_chats  Chats[]           @relation("member_one")
-  member_two_chats  Chats[]           @relation("member_two")
-  messages_received Messages[]        @relation("message_receiver")
-  messages_sent     Messages[]        @relation("message_sender")
-  user_token        RefreshTokens?
-  reviews_sent      Reviews[]         @relation("reviews_sent")
-  reviews_received  Reviews[]         @relation("reviews_received")
-  bids_sent         UserAdsBids[]     @relation("BidsSent")
-  bids_received     UserAdsBids[]     @relation("BidsReceived")
-  favorite_ads      UserFavoriteAds[]
-  address           Locations?        @relation(fields: [address_id], references: [id])
-  app_review        AppReviews?
+  id               Int               @id @default(autoincrement())
+  first_name       String
+  last_name        String
+  email            String            @unique
+  phone            String            @unique
+  password         String
+  profile_picture  String?
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @default(now())
+  address_id       Int?
+  rating           Float?
+  ads              Ads[]             @relation("user_ads")
+  member_one_chats Chats[]           @relation("member_one")
+  member_two_chats Chats[]           @relation("member_two")
+  messages_sent    Messages[]        @relation("message_sender")
+  user_token       RefreshTokens?
+  reviews_sent     Reviews[]         @relation("reviews_sent")
+  reviews_received Reviews[]         @relation("reviews_received")
+  bids_sent        UserAdsBids[]     @relation("BidsSent")
+  bids_received    UserAdsBids[]     @relation("BidsReceived")
+  favorite_ads     UserFavoriteAds[]
+  address          Locations?        @relation(fields: [address_id], references: [id])
+  app_review       AppReviews?
 }
 
 model RefreshTokens {
@@ -147,16 +146,14 @@ model Chats {
 }
 
 model Messages {
-  id          Int      @id @default(autoincrement())
-  sender_id   Int
-  receiver_id Int
-  chat_id     Int
-  content     String
-  created_at  DateTime
-  is_seen     Boolean
-  chat        Chats    @relation(fields: [chat_id], references: [id])
-  receiver    Users    @relation("message_receiver", fields: [receiver_id], references: [id])
-  sender      Users    @relation("message_sender", fields: [sender_id], references: [id])
+  id         Int      @id @default(autoincrement())
+  sender_id  Int
+  chat_id    Int
+  content    String
+  created_at DateTime
+  is_seen    Boolean
+  chat       Chats    @relation(fields: [chat_id], references: [id])
+  sender     Users    @relation("message_sender", fields: [sender_id], references: [id])
 }
 
 model AppReviews {

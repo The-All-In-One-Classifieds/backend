@@ -1,11 +1,12 @@
 import {Request, Response} from "express";
 import {prisma} from "../db";
+import {AppException} from "../common/AppException";
 
 export class ChatsController{
     async getAllUserChats(request: Request, response: Response) {
         const userId = parseInt(request.user.id)
 
-        const chats = prisma.chats.findMany({
+        const chats =  await prisma.chats.findMany({
             where: {
                 OR: [
                     { member_one_id: userId },
@@ -32,7 +33,7 @@ export class ChatsController{
                 },
                 messages: {
                     select: {
-                        receiver_id: true,
+                        sender_id: true,
                         is_seen: true,
                     },
                     orderBy: {
@@ -42,6 +43,9 @@ export class ChatsController{
                 },
                 last_message: true,
                 updated_at: true,
+            },
+            orderBy: {
+              updated_at: "desc"
             }
         });
 
