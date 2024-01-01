@@ -16,7 +16,7 @@ const app = express();
 
 //Program.cs
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: '*' }));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -33,9 +33,8 @@ initializeSocketIO(io);
 //     });
 //
 //     // Example of handling a custom chat event
-//     socket.on('chat message', (msg) => {
-//         console.log(`Message received from ${socket.id}: ${msg}`);
-//         io.emit('chat message', "Hi")
+//     socket.on('join_chat', (chatId) => {
+//         console.log(`Message received from ${socket.id} to join chat id: ${chatId}`);
 //         // You can emit a response or handle the message here
 //     });
 // });

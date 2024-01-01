@@ -5,6 +5,9 @@ import {AppException} from "../common/AppException";
 import {prisma} from "../db";
 import {ChatEventEnum} from "../common/Constants";
 import {DefaultEventsMap} from "socket.io/dist/typed-events";
+import { Request } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
+import { ParsedQs } from "qs";
 
 const socketUserMap = new Map<string, any>();
 
@@ -12,11 +15,10 @@ export function initializeSocketIO(io: Server<DefaultEventsMap, DefaultEventsMap
     return io.on("connection", async (socket) => {
         try {
             // Extract the token from the connection query or auth object
-            const token = socket.handshake.query.token || socket.handshake.auth.token;
+            const token = socket.handshake.auth.token
             let userId: number
             try {
                 const {sub: user_id} = verify(token, authConfig.jwt.secret);
-
                 if (typeof user_id !== 'string') {
                     throw new AppException("JWT token verification failed!", 401)
                 }
@@ -59,7 +61,8 @@ export function initializeSocketIO(io: Server<DefaultEventsMap, DefaultEventsMap
                     socketUserMap.delete(socket.id);
                 }
             });
-        } catch (error : any) {
+        } catch (error: any) {
+            console.log("Error occured while connecting to socket io:  ", error.message)
             socket.emit(
                 ChatEventEnum.SOCKET_ERROR_EVENT,
                 error?.message || "Something went wrong while connecting to the socket."
@@ -82,13 +85,19 @@ const mountJoinChatEvent = (socket: Socket<DefaultEventsMap, DefaultEventsMap, D
     });
 };
 
+interface typingEventProps {
+    chatId: string
+    userId: string
+}
+
 /**
  * @description This function is responsible to emit the typing event to the other participants of the chat
  * @param {Socket<import("socket.io/dist/typed-events").DefaultEventsMap, import("socket.io/dist/typed-events").DefaultEventsMap, import("socket.io/dist/typed-events").DefaultEventsMap, any>} socket
  */
 const mountParticipantTypingEvent = (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
-    socket.on(ChatEventEnum.TYPING_EVENT, (chatId) => {
-        socket.in(chatId).emit(ChatEventEnum.TYPING_EVENT, chatId);
+    socket.on(ChatEventEnum.TYPING_EVENT, (eventProps : typingEventProps) => {
+        console.log("Received typing event: ", eventProps)
+        socket.in(eventProps.chatId).emit(ChatEventEnum.TYPING_EVENT, eventProps);
     });
 };
 
@@ -97,11 +106,13 @@ const mountParticipantTypingEvent = (socket: Socket<DefaultEventsMap, DefaultEve
  * @param {Socket<import("socket.io/dist/typed-events").DefaultEventsMap, import("socket.io/dist/typed-events").DefaultEventsMap, import("socket.io/dist/typed-events").DefaultEventsMap, any>} socket
  */
 const mountParticipantStoppedTypingEvent = (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
-    socket.on(ChatEventEnum.STOP_TYPING_EVENT, (chatId) => {
-        socket.in(chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, chatId);
+    socket.on(ChatEventEnum.STOP_TYPING_EVENT, (eventProps : typingEventProps) => {
+        console.log("Received stop typing event: ", eventProps)
+        socket.in(eventProps.chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, eventProps);
     });
 };
 
-export const emitSocketEvent = (req, roomId, event, payload) => {
+export const emitSocketEvent = (req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, roomId: number, event: string, payload: { id: number; sender_id: number; chat_id: number; content: string; created_at: Date; is_seen: boolean; }) => {
+    console.log("Emitting new message to chat ", roomId, " : ", payload.content)
     req.app.get("io").in(roomId).emit(event, payload);
 };
