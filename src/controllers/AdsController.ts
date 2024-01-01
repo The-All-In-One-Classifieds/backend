@@ -450,4 +450,171 @@ export class AdsController {
         }
         return response.status(200).json(result)
     }
+
+    async getAdChat(request: Request, response: Response) {
+        const senderId = parseInt(request.user.id)
+        const adID = request.params?.id
+        const receiverID = request.params?.receiver
+
+        if (!adID) {
+            throw new AppException("Ad Id is invalid")
+        }
+
+        if(!receiverID) {
+            throw new AppException("Receiver Id is invalid")
+        }
+
+        const adId = parseInt(adID)
+        const receiverId = parseInt(receiverID)
+        const ad = await prisma.ads.findUnique({
+            where: {
+                id: adId,
+                is_active: true
+            }
+        })
+
+        if (!ad) {
+            throw new AppException("Ad does not exist")
+        }
+
+        if(senderId === receiverId) {
+            throw new AppException("You cannot message yourself")
+        }
+
+        console.log("Ad ID: ", ad.id)
+        const chat = await prisma.chats.findFirst({
+            where: {
+                ad_id: ad.id,
+                OR: [
+                    {
+                        member_one_id: senderId,
+                        member_two_id: receiverId,
+                    },
+                    {
+                        member_one_id: receiverId,
+                        member_two_id: senderId,
+                    },
+                ],
+            },
+            select: {
+                id: true,
+                updated_at: true,
+                messages: {
+                    select: {
+                        id: true,
+                        sender_id: true,
+                        is_seen: true,
+                        created_at: true,
+                        content: true
+                    },
+                    orderBy: {
+                        created_at: "asc"
+                    }
+                }
+            }
+        });
+
+        if(!chat) {
+            return response.status(200).json({})
+        }
+
+        await prisma.messages.updateMany({
+            where: {
+                chat_id: chat.id,
+                sender_id: receiverId,
+                is_seen: false
+            },
+            data: {
+                is_seen: true
+            }
+        });
+
+        return response.status(200).json(chat)
+    }
+
+    async sendMessage(request: Request, response: Response) {
+        const senderId = parseInt(request.user.id)
+        const adID = request.params?.id
+        const message : string = request.body?.message
+        const receiverID = request.body?.receiver
+
+        if (!adID) {
+            throw new AppException("Ad Id is invalid")
+        }
+
+        if(!message || message.length === 0) {
+            throw new AppException("Message is not provided")
+        }
+
+        if(!receiverID) {
+            throw new AppException("Receiver Id is invalid")
+        }
+
+        const adId = parseInt(adID)
+        const receiverId = parseInt(receiverID)
+        const ad = await prisma.ads.findUnique({
+            where: {
+                id: adId,
+                is_active: true
+            }
+        })
+
+        if (!ad) {
+            throw new AppException("Ad does not exist")
+        }
+
+        if(senderId === receiverId) {
+            throw new AppException("You cannot message yourself")
+        }
+
+        let chat : any = await prisma.chats.findFirst({
+            where: {
+                ad_id: ad.id,
+                OR: [
+                    {
+                        member_one_id: senderId,
+                        member_two_id: receiverId,
+                    },
+                    {
+                        member_one_id: receiverId,
+                        member_two_id: senderId,
+                    },
+                ],
+            }
+        });
+
+        if(!chat) {
+            chat = await prisma.chats.create({
+                data: {
+                    ad_id: adId,
+                    member_one_id: senderId,
+                    member_two_id: receiverId,
+                    updated_at: new Date(),
+                    last_message: message,
+                }
+            })
+        }
+
+
+        const messagePosted = await prisma.messages.create({
+            data: {
+                sender_id: senderId,
+                is_seen: false,
+                created_at: new Date(),
+                content: message,
+                chat_id: chat.id
+            }
+        })
+
+        await prisma.chats.update({
+            where: {
+                id: chat.id
+            },
+            data: {
+                last_message: message
+            }
+        })
+
+        return response.status(200).json(messagePosted)
+    }
 }
