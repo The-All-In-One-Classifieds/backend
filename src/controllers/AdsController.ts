@@ -6,6 +6,8 @@ import {DiskManager} from "../services/DiskManager";
 import {AppException} from "../common/AppException";
 import {loadavg} from "os";
 import * as trace_events from "trace_events";
+import {emitSocketEvent} from "../socket";
+import {ChatEventEnum} from "../common/Constants";
 
 export class AdsController {
     async show(request: Request, response: Response) {
@@ -87,7 +89,6 @@ export class AdsController {
 
         const categories: number[] = categoriesStr?.map(Number);
 
-        console.log("filters\n", is_new, "\n", sortString, "\n", categories)
         if (categories?.length && categories?.length) {
             whereCondition.category_id = {
                 in: categories,
@@ -168,7 +169,7 @@ export class AdsController {
             location,
             allow_bidding,
         } = request.body
-        console.log("Bidding ", allow_bidding)
+
         const userId = parseInt(request.user.id);
 
         if (!title) {
@@ -481,7 +482,6 @@ export class AdsController {
             throw new AppException("You cannot message yourself")
         }
 
-        console.log("Ad ID: ", ad.id)
         const chat = await prisma.chats.findFirst({
             where: {
                 ad_id: ad.id,
@@ -611,10 +611,12 @@ export class AdsController {
                 id: chat.id
             },
             data: {
-                last_message: message
+                last_message: message,
+                updated_at: new Date()
             }
         })
 
+        emitSocketEvent(request, chat.id, ChatEventEnum.MESSAGE_RECEIVED_EVENT, messagePosted);
         return response.status(200).json(messagePosted)
     }
 }

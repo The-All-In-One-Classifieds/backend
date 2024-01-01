@@ -49,7 +49,6 @@ export class ChatsController{
             }
         });
 
-        console.log("All Chats:\n", chats);
         return response.status(200).json(chats);
     }
 }
