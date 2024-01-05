@@ -16,12 +16,23 @@ const app = express();
 
 //Program.cs
 app.use(express.json());
-app.use(cors({ origin: '*' }));
+app.use(cors({
+    origin: '*', // Allow requests from this origin
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow sending cookies and authentication headers
+}));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true
+    },
     pingTimeout: 60000,
 });
+
 app.set("io", io); // using set method to mount the `io` instance on the app to avoid usage of `global`
 initializeSocketIO(io);
 

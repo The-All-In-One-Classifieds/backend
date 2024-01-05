@@ -6,7 +6,7 @@ import {DiskManager} from "../services/DiskManager";
 import {AppException} from "../common/AppException";
 import {loadavg} from "os";
 import * as trace_events from "trace_events";
-import {emitSocketEvent} from "../socket";
+import {emitSocketEvent, emitSocketEventToChat} from "../socket";
 import {ChatEventEnum} from "../common/Constants";
 
 export class AdsController {
@@ -616,7 +616,8 @@ export class AdsController {
             }
         })
 
-        emitSocketEvent(request, chat.id, ChatEventEnum.MESSAGE_RECEIVED_EVENT, messagePosted);
+        emitSocketEvent(request, ChatEventEnum.CHAT_MESSAGE_RECEIVED_EVENT, {chat_id: messagePosted.chat_id, content: messagePosted.content, updated_at: messagePosted.created_at});
+        emitSocketEventToChat(request, chat.id, ChatEventEnum.MESSAGE_RECEIVED_EVENT, messagePosted);
         return response.status(200).json(messagePosted)
     }
 }
