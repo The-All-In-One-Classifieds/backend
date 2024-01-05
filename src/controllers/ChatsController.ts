@@ -5,7 +5,6 @@ import {AppException} from "../common/AppException";
 export class ChatsController{
     async getAllUserChats(request: Request, response: Response) {
         const userId = parseInt(request.user.id)
-
         const chats =  await prisma.chats.findMany({
             where: {
                 OR: [
@@ -14,6 +13,7 @@ export class ChatsController{
                 ]
             },
             select: {
+                id: true,
                 ad_id: true,
                 member_one: {
                     select: {

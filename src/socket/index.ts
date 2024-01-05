@@ -49,6 +49,7 @@ export function initializeSocketIO(io: Server<DefaultEventsMap, DefaultEventsMap
 
             // Common events that needs to be mounted on the initialization
             mountJoinChatEvent(socket);
+            mountLeaveChatEvent(socket);
             mountParticipantTypingEvent(socket);
             mountParticipantStoppedTypingEvent(socket);
 
@@ -85,6 +86,16 @@ const mountJoinChatEvent = (socket: Socket<DefaultEventsMap, DefaultEventsMap, D
     });
 };
 
+const mountLeaveChatEvent = (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
+    socket.on(ChatEventEnum.LEAVE_CHAT_EVENT, (chatId) => {
+        console.log(`User left the chat 🤝. chatId: `, chatId);
+        // joining the room with the chatId will allow specific events to be fired where we don't bother about the users like typing events
+        // E.g. When user types we don't want to emit that event to specific participant.
+        // We want to just emit that to the chat where the typing is happening
+        socket.leave(chatId);
+    });
+};
+
 interface typingEventProps {
     chatId: string
     userId: string
@@ -112,7 +123,12 @@ const mountParticipantStoppedTypingEvent = (socket: Socket<DefaultEventsMap, Def
     });
 };
 
-export const emitSocketEvent = (req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, roomId: number, event: string, payload: { id: number; sender_id: number; chat_id: number; content: string; created_at: Date; is_seen: boolean; }) => {
+export const emitSocketEvent = (req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, event: string, payload: { chat_id: number; content: string; updated_at: Date; }) => {
+    console.log("Emitting new message: ", payload.content)
+    req.app.get("io").emit(event, payload);
+};
+
+export const emitSocketEventToChat = (req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, roomId: number, event: string, payload: { id: number; sender_id: number; chat_id: number; content: string; created_at: Date; is_seen: boolean; }) => {
     console.log("Emitting new message to chat ", roomId, " : ", payload.content)
     req.app.get("io").in(roomId).emit(event, payload);
 };
